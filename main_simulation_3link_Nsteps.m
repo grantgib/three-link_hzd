@@ -1,16 +1,9 @@
 % SIMULATION_3LINK_OPTIMIZATION - animated simulation showing one step of
 % the optimized gait to minimize energy from joint torques
 
-clear all
-close all
-%% Setup file paths
-addpath(genpath('../../GrizzleCoordinateSystem'));
-% addpath('../Animation_Plots');
-% addpath('../Control');
-% addpath('../Control/Bezier_Files');
-% addpath('../Dynamics');
-% addpath('../ODE45_Events');
-% addpath('../Poincare_Map');
+close all; clear all; clc;
+restoredefaultpath;
+addpath(genpath('.'));
 
 %% INITIALIZE VARIABLES
 % Global Variables
@@ -18,34 +11,34 @@ myGlobalVariables % Cost Geq Gineq alphas X0 angleSwitch=pi/16 counter
 
 % Starting with end of step (x_minus)
 x_ic = [pi/8 pi/10 1.6 -1.4 0]';    % q2 not included and is set = -q1 in cost
-freeAlphas = [0 0 0 0]'; % alpha 2,3 for y1,y2 are free can be changed by optimization
-X0 = [x_ic; freeAlphas];
+% freeAlphas = [0 0 0 0]'; % alpha 2,3 for y1,y2 are free can be changed by optimization
+% X0 = [x_ic; freeAlphas];
 
 % load the optimized gait
 % load('OptimGait');
 % X0 = X_SAVE;
 
 % Cost = 305.174. no constraints
-X0 = [0.3038
-    0.2383
-    1.1260
-   -0.6731
-   -0.0268
-    0.1652
-    0.1525
-    0.6283
-   -0.0132]
+% X0 = [0.3038
+%     0.2383
+%     1.1260
+%    -0.6731
+%    -0.0268
+%     0.1652
+%     0.1525
+%     0.6283
+%    -0.0132]
 
 % Cost = 240.0974. satisfies torque <50. Speed > 0.5. Ft/Fn < 0.6.
-X0=[0.2980
-    0.2466
-    1.2839
-   -0.1215
-   -0.7131
-    0.1462
-    0.0090
-    0.4718
-    0.3510]
+% X0=[0.2980
+%     0.2466
+%     1.2839
+%    -0.1215
+%    -0.7131
+%     0.1462
+%     0.0090
+%     0.4718
+%     0.3510]
 
 % Cost = 496.3686. speed is 1.0 w/ no torque constraints
 % X0=[0.3005
@@ -60,26 +53,26 @@ X0=[0.2980
 
 % Cost = 507.1545. Velocity=1.0. Torque constraint at 40 and slippage
 % constraint applied
-X0=[0.3031
-    0.3891
-    1.5409
-   -0.5259
-   -0.5194
-    0.1780
-    0.3431
-    0.7853
-    0.1244]
+% X0=[0.3031
+%     0.3891
+%     1.5409
+%    -0.5259
+%    -0.5194
+%     0.1780
+%     0.3431
+%     0.7853
+%     0.1244]
 
 % Cost = 428.8277. speed=1.0, torque < 37
-X0=[0.2957
-    0.3845
-    1.6560
-   -0.0450
-   -1.0724
-    0.2582
-    0.3588
-    0.6568
-    0.0462]
+% X0=[0.2957
+%     0.3845
+%     1.6560
+%    -0.0450
+%    -1.0724
+%     0.2582
+%     0.3588
+%     0.6568
+%     0.0462]
 
 % Cost = 464.8080. speed=1.0, torque < 40, steplength=0.58
 X0=[0.2942
@@ -90,7 +83,7 @@ X0=[0.2942
     0.0767
     0.3726
     0.7158
-    0.1212]
+    0.1212];
 
 % v=2.3291
 % X0=[0.2107
@@ -173,7 +166,8 @@ pStanceFoot = [0 0]';
 StanceFoot = [StanceFoot pStanceFoot];
 X = [X x_minus];
 Time = [0 Time];
-n = 5;
+
+n = input("Enter number of steps to take (integer): ");
 
 for i = 1:n
 [pHip,pTorso,pSwingFoot_end] = Points_3link(x_minus,pStanceFoot) ;
@@ -260,9 +254,10 @@ FR = FR';
 %% COST
 Cost = IntegralSqTorque / max(0.1/StepLength);
 
-toc
-%% ANIMATION + PLOTS
+%% Animation
 Animation_3link(t1,X,StanceFoot)
+
+%% PLOTS
 % Plot state space variables
 ss = true ;
 Plots_3link_Optimization(ss,Time,X,Y,DY,S,Torques,pSwing,GRF) ;
@@ -270,6 +265,8 @@ Plots_3link_Optimization(ss,Time,X,Y,DY,S,Torques,pSwing,GRF) ;
 % Plot other output data
 ss = false ;
 Plots_3link_Optimization(ss,Time,X,Y,DY,S,Torques,pSwing,GRF) ;
+
+
 
 
 

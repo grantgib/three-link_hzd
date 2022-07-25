@@ -1,14 +1,8 @@
 % GAIT_DESIGN_FMINCON - Use fmincon to design optimized gaits that are
 % defined by the bezier polynomials
-clear all
-
-addpath(genpath('../../GrizzleCoordinateSystem'));
-% addpath('../Animation_Plots');
-% addpath('../Control');
-% addpath('../Control/Bezier_Files');
-% addpath('../Dynamics');
-% addpath('../ODE45_Events');
-% addpath('../Poincare_Map');
+close all; clear all; clc;
+restoredefaultpath;
+addpath(genpath('.'));
 
 %% INITIALIZE VARIABLES
 disp('Initialize Variables...');
@@ -18,52 +12,52 @@ myGlobalVariables
 % General Variables [Starting with end of step (x_minus)]
 counter = 0;
 x_ic = [pi/8 pi/8 1.6 -1.5 0.1]';    % q2 not included and is set = -q1 in cost
-freeAlphas = [pi/6 pi/6 0 0]'; % alpha 2,3 for y1,y2 are free can be changed by optimization
-X0 = [x_ic; freeAlphas];
+% freeAlphas = [pi/6 pi/6 0 0]'; % alpha 2,3 for y1,y2 are free can be changed by optimization
+% X0 = [x_ic; freeAlphas];
 
 % Cost = 305.174. Computed from initial guess
-X0 = [0.3038
-    0.2383
-    1.1260
-   -0.6731
-   -0.0268
-    0.1652
-    0.1525
-    0.6283
-   -0.0132]
+% X0 = [0.3038
+%     0.2383
+%     1.1260
+%    -0.6731
+%    -0.0268
+%     0.1652
+%     0.1525
+%     0.6283
+%    -0.0132]
 
 % Cost = 308.901. Satisfies torque and velocity constraints
-X0=[0.3037
-    0.2379
-    1.1280
-   -0.6744
-   -0.0338
-    0.1676
-    0.1500
-    0.6286
-   -0.0284]
+% X0=[0.3037
+%     0.2379
+%     1.1280
+%    -0.6744
+%    -0.0338
+%     0.1676
+%     0.1500
+%     0.6286
+%    -0.0284]
 
 % Cost = 1207. speed is 1.0 w/ no torque constraints
-X0=[0.3372
-    0.4147
-    1.5559
-   -0.7245
-   -0.1709
-   -0.1061
-    0.3697
-    0.4163
-   -0.1033]
+% X0=[0.3372
+%     0.4147
+%     1.5559
+%    -0.7245
+%    -0.1709
+%    -0.1061
+%     0.3697
+%     0.4163
+%    -0.1033]
 
 % Cost = 496.3686. speed is 1.0 w/ no torque constraints
-X0=[0.3005
-    0.3725
-    1.4807
-   -0.9349
-   -0.3351
-    0.1711
-    0.2916
-    0.7687
-    0.2045]
+% X0=[0.3005
+%     0.3725
+%     1.4807
+%    -0.9349
+%    -0.3351
+%     0.1711
+%     0.2916
+%     0.7687
+%     0.2045]
 
 % Cost = 428.8277. speed=1.0, torque < 37
 X0=[0.2957
@@ -120,7 +114,7 @@ lb = X0 - 0.15*pi;
 ub = X0 + 0.15*pi;
 
 % save('OptimGaitOld','X0');
-X0
+% X0
 
 [X,FVAL,exitflag,Output] = fmincon('Cost_Torque',X0,A,Aeq,b,beq,lb,ub,'Nonlinear_Constraints',options_fmincon)
 

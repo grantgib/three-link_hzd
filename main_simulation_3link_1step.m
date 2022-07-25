@@ -1,37 +1,50 @@
+% SIMULATION_3LINK_OPTIMIZATION - animated simulation showing one step of
+% the optimized gait to minimize energy from joint torques
 
 clear all
 close all
-%% Setup file paths
-addpath(genpath('../../GrizzleCoordinateSystem'));
-% addpath('../Animation_Plots');
-% addpath('../Control');
-% addpath('../Control/Bezier_Files');
-% addpath('../Dynamics');
-% addpath('../ODE45_Events');
-% addpath('../Poincare_Map');
+restoredefaultpath;
+addpath(genpath('.'));
 
 %% INITIALIZE VARIABLES
 % Global Variables
 myGlobalVariables % Cost Geq Gineq alphas X0 angleSwitch=pi/16 counter
 
 % Starting with end of step (x_minus)
-q1=pi/8; q2=-pi/8; q3=pi/6; dq1=1.6; dq2=-1.6; dq3=0;
-q_ic_subset = [q1 q3]'; dq_ic = [dq1 dq2 dq3]';
-x_ic = [q_ic_subset; dq_ic];
-freeAlphas = [0 0 0 0]'; % alpha 2,3 for y1,y2 are free can be changed by optimization
-X0 = [x_ic; freeAlphas];
+x_ic = [pi/8 pi/10 1.6 -1.4 0]';    % q2 not included and is set = -q1 in cost
+
+% load the optimized gait
+% load('OptimGait');
+% X0 = X_SAVE;
+
+% Cost = 305.174
+% X0 = [0.3038
+%     0.2383
+%     1.1260
+%    -0.6731
+%    -0.0268
+%     0.1652
+%     0.1525
+%     0.6283
+%    -0.0132];
+
+% Cost = 240.0974. satisfies torque <50. Speed > 0.5. Ft/Fn < 0.6.
+X0=[0.2980
+    0.2466
+    1.2839
+   -0.1215
+   -0.7131
+    0.1462
+    0.0090
+    0.4718
+    0.3510]
 
 % General Variables
 dimq = 3;
-kp = 66;
-kd = 13;
+q1Switch = X0(1);
 
-q1Switch = q1;
-
-% ODE options
-options = odeset('Events',@OptimEvent_3Link,'MaxStep',0.1,'Refine',4,'RelTol',10^-5,'AbsTol',10^-6);
-
-% Simulation Parameters
+% ODE solver parameters
+options = odeset('Events',@(t,x) OptimEvent_3Link(t,x,q1Switch),'MaxStep',0.1,'Refine',4,'RelTol',10^-5,'AbsTol',10^-6);
 tspan = [0 2];
 
 % Variables to be collected and save
@@ -42,14 +55,16 @@ FT =[]; FN = [];
 
 tic
 %% SIMULATE STEP (INCLUDING IMPACT)
+
 % Extract Parameters at End of Step
-[q_minus,dq_minus,h_alpha45] = ExtractAtEOS(X0);
+[q_minus,dq_minus,h_alpha45] = ExtractAtEOS(X0,q1Switch);
 x_minus = [q_minus; dq_minus];
 pStanceFoot = [0 0]';
 StanceFoot = [StanceFoot pStanceFoot];
 [pHip,pTorso,pSwingFoot_end] = Points_3link(x_minus,pStanceFoot) ;
 X = [X x_minus];
 X = X';
+
 % Apply Impact
 [q_plus,dq_plus] = ImpactModel_3link(x_minus);
 x_plus = [q_plus; dq_plus];
@@ -57,16 +72,16 @@ pStanceFoot = pSwingFoot_end;
 StanceFoot = [StanceFoot pStanceFoot];
 
 % Set alpha parameters
-h_alpha01 = ExtractAtBOS(x_plus);
-% h_alpha23 = a(6:length(a));
-h_alpha23 = [0 0 0 0]';
+h_alpha01 = ExtractAtBOS(x_plus,q1Switch);
+h_alpha23 = X0(6:length(X0));
 h_alpha = ReconstructHalpha(h_alpha01,h_alpha23,h_alpha45);
+% BezierPlot(X0);
 
 % Initial Condition
 x_init = [q_plus; dq_plus];
 
 % ODE Solver
-[t1,x1,t_end,x_end] = ode45(@(t,x) StateSpaceModel_3link(t,x,pStanceFoot,kp,kd),tspan,x_init,options);
+[t1,x1,t_end,x_end] = ode45(@(t,x) StateSpaceModel_3link(t,x,pStanceFoot,q1Switch,h_alpha),tspan,x_init,options);
 
 [pHip,pTorso,pSwingEnd] = Points_3link(x_end,pStanceFoot) ;
 StepLength = pSwingEnd(1) - pStanceFoot(1) ;
@@ -79,8 +94,7 @@ IntegralSqTorque = 0;
 pSwing = zeros(length(t1)-1,2);
 for k = 1:length(t1)-1
     xiter = x1(k,:);
-    [u,y,dy,s] = FdBk_Control_3link(xiter',kp,kd); 
-    [pHip,pTorso,pSwingiter] = Points_3link(xiter,pStanceFoot) ;
+    [dx,q,dq,y,dy,u,pSwingiter,GRF_iter,s] = StateSpaceModel_3link(t1(k),xiter',pStanceFoot,q1Switch,h_alpha);
     pSwing(k,:) = pSwingiter';
     IntegralSqTorque = IntegralSqTorque + norm(u)^2*dt(k) ;
    

@@ -3,11 +3,15 @@ function [] = Animation_3link(t,x,StanceFoot)
 %   different positions (i.e. stance leg, swing leg, etc.)
 
 %% Set defaults for plot
-clf
+figure
 color_Stance = 'r' ; color_Swing = 'b' ; color_Torso = 'g' ;
-xLow = -1 ; xUp = 20 ; yLow = -.2 ; yUp = 1.5 ;
-xlim([xLow xUp]) ; ylim([yLow yUp]) ;
-hline = refline(0,0);
+xLow = -1;
+xUp = 20;
+yLow = -0.2;
+yUp = 1.5 ;
+xlim([xLow xUp]);
+ylim([yLow yUp]);
+hline = yline(0);
 set(hline,'LineWidth',3) ;
 %% Initialize the linkage lines
 [xRow,xCol]=size(x) ;
@@ -23,6 +27,7 @@ set(link_Stance,'LineWidth',2,'Color',color_Stance) ;
 set(link_Swing,'LineWidth',2,'Color',color_Swing) ;
 set(link_Torso,'LineWidth',2,'Color',color_Torso) ;
 
+grid on;
 %% Draw the linkages for each state space iteration
 for j = 1:xRow
     
@@ -40,9 +45,9 @@ for j = 1:xRow
         'YData',[pHip(2) pSwingFoot(2)]);    
     set(link_Torso,'XData',[pHip(1) pTorso(1)],...
         'YData',[pHip(2) pTorso(2)]);
-    
+    xlim([pHip(1)-1 pHip(1)+1])
     drawnow ;       % Draws the newly updated lines onto the figure
-%     pause(0.005) ;
+    pause(0.01) ;
 %     pause
 end
 end
