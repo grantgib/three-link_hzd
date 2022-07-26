@@ -1,7 +1,9 @@
 # three-link_hzd
 
 Hybrid Zero Dynamics Optimization and Simulation for a 3-link walker.
+
 Author: Grant Gibson (2018)
+
 Based on this the book: [Feedback Control of Dynamic Bipedal Robot Locomotion](https://github.com/grantgib/three-link_hzd/tree/master/Reference)
 
 ## How to Use
